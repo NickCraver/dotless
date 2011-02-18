@@ -880,21 +880,21 @@ namespace dotless.Core.Parser
         //
         public Node Operand(Parser parser)
         {
-            var operand = Sub(parser) ??
-                          Dimension(parser) ??
-                          Color(parser) ??
-                          (Node) Variable(parser);
+          var operand = Sub(parser) ??
+                        Dimension(parser) ??
+                        Color(parser) ??
+                        (Node) Variable(parser);
 
-            if (operand != null)
-                return operand;
+          if (operand != null)
+            return operand;
 
-            if (parser.Tokenizer.CurrentChar == 'u' && parser.Tokenizer.Peek(@"url\("))
-                return null;
+          if(parser.Tokenizer.CurrentChar == 'u' && parser.Tokenizer.Peek(@"url\("))
+            return null;
 
-            return Call(parser) || Keyword(parser);
+          return Call(parser) || Keyword(parser);
         }
 
-        //
+      //
         // Expressions either represent mathematical operations,
         // or white-space delimited Entities.
         //

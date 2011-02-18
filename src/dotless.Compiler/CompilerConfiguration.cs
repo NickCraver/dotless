@@ -1,6 +1,5 @@
 namespace dotless.Compiler
 {
-    using System;
     using Core.configuration;
 
     internal class CompilerConfiguration : DotlessConfiguration
@@ -19,5 +18,6 @@ namespace dotless.Compiler
 
         public bool Watch { get; set; }
         public bool Help { get; set; }
+        public bool Recurse { get; set; }
     }
 }

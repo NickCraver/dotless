@@ -45,6 +45,7 @@ namespace dotless.Core
             catch (ParserException e)
             {
                 Logger.Error(e.Message);
+                throw;
             }
 
             return "";

@@ -10,7 +10,7 @@ namespace dotless.Compiler
 
     public class Program
     {
-        public static void Main(string[] args)
+        public static int Main(string[] args)
         {
             var arguments = new List<string>();
 
@@ -19,13 +19,15 @@ namespace dotless.Compiler
             var configuration = GetConfigurationFromArguments(arguments);
 
             if(configuration.Help)
-                return;
+                return 0;
 
             if (arguments.Count == 0)
             {
                 WriteHelp();
-                return;
+                return 0;
             }
+
+            var returnValue = 0;
 
             var inputDirectoryPath = Path.GetDirectoryName(arguments[0]);
             if(string.IsNullOrEmpty(inputDirectoryPath)) inputDirectoryPath = ".\\";
@@ -45,7 +47,7 @@ namespace dotless.Compiler
             else outputDirectoryPath = inputDirectoryPath;
             if (HasWildcards(inputFilePattern)) outputFilename = string.Empty;
 
-            var filenames = Directory.GetFiles(inputDirectoryPath, inputFilePattern);
+            var filenames = Directory.GetFiles(inputDirectoryPath, inputFilePattern, configuration.Recurse ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly); 
             var engine = new EngineFactory(configuration).GetEngine();
 
             using (var watcher = new Watcher() { Watch = configuration.Watch })
@@ -59,7 +61,9 @@ namespace dotless.Compiler
                 foreach (var filename in filenames)
                 {
                     var inputFile = new FileInfo(filename);
-                    var pathbuilder = new System.Text.StringBuilder(outputDirectoryPath + "\\");
+                    var pathbuilder = configuration.Recurse
+                                          ? new System.Text.StringBuilder(Path.GetDirectoryName(filename) + "\\")
+                                          : new System.Text.StringBuilder(outputDirectoryPath + "\\");
                     if (string.IsNullOrEmpty(outputFilename)) pathbuilder.Append(Path.ChangeExtension(inputFile.Name, "css"));
                     else pathbuilder.Append(outputFilename);
                     var outputFilePath = Path.GetFullPath(pathbuilder.ToString());
@@ -67,6 +71,8 @@ namespace dotless.Compiler
                     CompilationDelegate compilationDelegate = () => CompileImpl(engine, inputFile.FullName, outputFilePath);
                     Console.WriteLine("[Compile]");
                     var files = compilationDelegate();
+                    if (files == null)
+                        returnValue = 1;
                     if (watcher.Watch) watcher.SetupWatchers(files, compilationDelegate);
                 }
                 if (configuration.Watch) WriteAbortInstructions();
@@ -75,6 +81,7 @@ namespace dotless.Compiler
                     System.Threading.Thread.Sleep(200);
                 }
             }
+            return returnValue;
         }
         private static CompilationDelegate CreationImpl(ILessEngine engine, string inputFilePath, string outputDirectoryPath)
         {
@@ -153,6 +160,7 @@ namespace dotless.Compiler
             Console.WriteLine("\t\t-m --minify - Output CSS will be compressed");
             Console.WriteLine("\t\t-w --watch - Watches .less file for changes");
             Console.WriteLine("\t\t-h --help - Displays this dialog");
+            Console.WriteLine("\t\t-r --recurse - Apply input file pattern to sub directories");
             Console.WriteLine("\tinputfile: .less file dotless should compile to CSS");
             Console.WriteLine("\toutputfile: (optional) desired filename for .css output");
             Console.WriteLine("\t\t Defaults to inputfile.css");
@@ -179,6 +187,10 @@ namespace dotless.Compiler
                     else if (arg == "-w" || arg == "--watch")
                     {
                         configuration.Watch = true;
+                    }
+                    else if (arg == "-r" || arg == "--rescurse")
+                    {
+                        configuration.Recurse = true;
                     }
                     else if (arg.StartsWith("-D") && arg.Contains("="))
                     {
