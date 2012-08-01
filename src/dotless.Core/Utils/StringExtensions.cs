@@ -39,8 +39,10 @@
 
             // Split assuming we might get any combination of backward and forward slashes
             string[] segments = path.Split('\\', '/');
-            foreach (string segment in segments)
+            for(var i = 0; i < segments.Length; i++)
             {
+                var segment = segments[i];
+
                 // If the parent reference is the first one on the stack, do nothing 
                 // (because there's nothing we can do, and removing it would break the path)
                 if (segment.Equals("..") && pathStack.Count > 0 && pathStack.Peek() != "..")

@@ -1,7 +1,9 @@
 ﻿namespace dotless.Core.Parser.Infrastructure.Nodes
 {
+    using System.Linq;
     using System.Collections;
     using System.Collections.Generic;
+using System;
 
     public class NodeList : NodeList<Node>
     {
@@ -18,6 +20,11 @@
         public NodeList(IEnumerable<Node> nodes)
         {
             Inner = new List<Node>(nodes);
+        }
+
+        public override Node Copy()
+        {
+            return new NodeList(Inner.Select(s => s.Copy()));
         }
     }
 
@@ -110,6 +117,23 @@
         {
             get { return Inner[index]; }
             set { Inner[index] = value; }
+        }
+
+        public override Node Copy()
+        {
+            return new NodeList<TNode>(Inner.Select(i => i));
+        }
+
+        public bool Any(Func<TNode, bool> del)
+        {
+            var c = Inner.Count;
+
+            for (var i = 0; i < c; i++)
+            {
+                if (del(Inner[i])) return true;
+            }
+
+            return false;
         }
     }
 }

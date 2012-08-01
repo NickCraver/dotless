@@ -4,6 +4,8 @@
     {
         public string Value { get; set; }
 
+        protected TextNode() { }
+
         public TextNode(string contents)
         {
             Value = contents;
@@ -27,6 +29,11 @@
         public override string ToString()
         {
             return Value;
+        }
+
+        public override Node Copy()
+        {
+            return new TextNode(Value);
         }
     }
 }

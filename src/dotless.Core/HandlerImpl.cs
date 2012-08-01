@@ -3,6 +3,7 @@ namespace dotless.Core
     using Abstractions;
     using Input;
     using Response;
+    using System.IO;
 
     public class HandlerImpl
     {
@@ -21,7 +22,7 @@ namespace dotless.Core
 
         public void Execute()
         {
-            var localPath = Http.Context.Request.Url.LocalPath;
+            var localPath = Http.Context.Request.PhysicalApplicationPath + Http.Context.Request.Url.LocalPath.Replace('/', Path.DirectorySeparatorChar);
 
             var source = FileReader.GetFileContents(localPath);
 

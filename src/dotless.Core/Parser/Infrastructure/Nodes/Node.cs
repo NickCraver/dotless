@@ -57,5 +57,7 @@
                 this is RegexMatchResult ||
                 this is CharMatchResult;
         }
+
+        public abstract Node Copy();
     }
 }

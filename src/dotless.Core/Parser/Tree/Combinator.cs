@@ -31,5 +31,10 @@
                   { ">", env.Compress ? ">" : " > " } 
               }[Value];
         }
+
+        public override Node Copy()
+        {
+            return new Combinator(Value);
+        }
     }
 }

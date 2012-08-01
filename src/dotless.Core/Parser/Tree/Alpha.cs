@@ -23,5 +23,10 @@
         {
             return string.Format("alpha(opacity={0})", Value.ToCSS(env));
         }
+
+        public override Node Copy()
+        {
+            return new Alpha(Value.Copy());
+        }
     }
 }

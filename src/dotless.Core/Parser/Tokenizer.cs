@@ -45,8 +45,8 @@ namespace dotless.Core.Parser
             {
                 var chunkParts = new List<StringBuilder> { new StringBuilder() };
                 var chunkPart = chunkParts.Last();
-                var skip = new Regex(@"\G[^\""'{}/\\]+");
-                var comment = new Regex(@"\G\/\*(?:[^*\n]|\*+[^\/\n]|\*?(\n))*?\*+\/");
+                var skip = new Regex(@"\G[^\""'{}/\\`]+");
+                var comment = new Regex(@"\G\/\*(?:[^*\n]|\*+[^\/\n]|\*?(\n))*\*+\/");
                 var level = 0;
                 var lastBlock = 0;
                 var lastQuote = 0;
@@ -84,7 +84,7 @@ namespace dotless.Core.Parser
 
                     var c = _input[i];
 
-                    if (c == '"' || c == '\'')
+                    if (c == '"' || c == '\'' || c == '`')
                     {
                         if (inString == null)
                         {
@@ -127,7 +127,7 @@ namespace dotless.Core.Parser
                 if(level > 0)
                     throw new ParsingException("Missing closing '}'", lastBlock);
 
-                _chunks = chunkParts.Select(p => p.ToString()).ToList();
+                _chunks = chunkParts.SelectList(p => p.ToString());
 
                 _input = _chunks.JoinStrings("");
 
@@ -171,13 +171,39 @@ namespace dotless.Core.Parser
             return null;
         }
 
-
-        public RegexMatchResult Match(string tok)
+        /// <summary>
+        /// A faster alternative to Match for when you don't need any Regex magic.
+        /// </summary>
+        public bool MatchSimple(string tok, bool caseInsensitive = false)
         {
-            return Match(tok, false);
+            var chunk = _chunks[_j];
+
+            var offset = _i - _current;
+
+            int i;
+            for (i = 0; i < tok.Length && (i + offset) < chunk.Length; i++)
+            {
+                var c1 = tok[i];
+                var c2 = chunk[offset + i];
+                if (caseInsensitive)
+                {
+                    c1 = char.ToLowerInvariant(c1);
+                    c2 = char.ToLowerInvariant(c2);
+                }
+
+                if (c1 != c2) return false;
+            }
+
+            var ret = i == tok.Length;
+
+            if (!ret) return false;
+
+            Advance(tok.Length);
+
+            return true;
         }
 
-        public RegexMatchResult Match(string tok, bool caseInsensitive)
+        public RegexMatchResult Match(string tok, bool caseInsensitive = false)
         {
             var options = RegexOptions.None;
             if (caseInsensitive)
@@ -236,6 +262,21 @@ namespace dotless.Core.Parser
                 return false;
 
             return _input[_i] == tok;
+        }
+
+        /// <summary>
+        /// Version of Peek that only accepts an exact string match, doesn't do any Regex stuff.
+        /// Use it for speed.
+        /// </summary>
+        public bool PeekSimple(string tok)
+        {
+            int i;
+            for (i = 0; i < tok.Length && (i + _i) < _input.Length; i++)
+            {
+                if (tok[i] != _input[_i + i]) return false;
+            }
+
+            return i == tok.Length;
         }
 
         public bool Peek(string tok)

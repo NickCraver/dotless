@@ -21,5 +21,10 @@
         {
             return Value;
         }
+
+        public override Node Copy()
+        {
+            return new Keyword(Value);
+        }
     }
 }

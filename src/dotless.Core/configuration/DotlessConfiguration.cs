@@ -21,6 +21,8 @@ namespace dotless.Core.configuration
             Logger = null;
             LogLevel = LogLevel.Error;
             Optimization = 1;
+            CompileInParallel = false;
+            TimeCompilation = false;
         }
 
         public DotlessConfiguration(DotlessConfiguration config)
@@ -32,6 +34,8 @@ namespace dotless.Core.configuration
             Logger = null;
             LogLevel = config.LogLevel;
             Optimization = config.Optimization;
+            CompileInParallel = config.CompileInParallel;
+            TimeCompilation = config.TimeCompilation;
         }
 
         public bool MinifyOutput { get; set; }
@@ -41,5 +45,8 @@ namespace dotless.Core.configuration
         public Type Logger { get; set; }
         public LogLevel LogLevel { get; set; }
         public int Optimization { get; set; }
+        public bool CompileInParallel { get; set; }
+        public bool TimeCompilation { get; set; }
+        public bool SilenceLogging { get; set; }
     }
 }

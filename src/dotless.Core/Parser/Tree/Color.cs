@@ -74,8 +74,7 @@ namespace dotless.Core.Parser.Tree
             else
             {
                 RGB = rgb.ToCharArray()
-                    .Select(c => (double) int.Parse("" + c + c, NumberStyles.HexNumber))
-                    .ToArray();
+                    .SelectArray(c => (double)int.Parse("" + c + c, NumberStyles.HexNumber));
             }
             Alpha = 1;
         }
@@ -144,14 +143,14 @@ namespace dotless.Core.Parser.Tree
                              .JoinStrings("")
                              .ToLowerInvariant();
 
-            if (env.Compress)
-            {
-                hexString = Regex.Replace(hexString, @"#(.)\1(.)\2(.)\3", "#$1$2$3");
-                return string.IsNullOrEmpty(keyword) || hexString.Length < keyword.Length ? hexString : keyword;
-            }
+            //if (env.Compress)
+            //{
+                //hexString = Regex.Replace(hexString, @"#(.)\1(.)\2(.)\3", "#$1$1$2$2$3$3");
+                //return string.IsNullOrEmpty(keyword) || hexString.Length < keyword.Length ? hexString : keyword;
+            //}
 
-            if (!string.IsNullOrEmpty(keyword))
-                return keyword;
+            //if (!string.IsNullOrEmpty(keyword))
+            //   return keyword;
 
             return hexString;
         }
@@ -201,6 +200,11 @@ namespace dotless.Core.Parser.Tree
                 return new Color(color);
 
             return null;
+        }
+
+        public override Node Copy()
+        {
+            return new Color(RGB.SelectArray(d => d), Alpha);
         }
     }
 }

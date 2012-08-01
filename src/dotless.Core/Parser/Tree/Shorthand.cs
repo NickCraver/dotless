@@ -18,5 +18,10 @@
         {
             return First.ToCSS(env) + "/" + Second.ToCSS(env);
         }
+
+        public override Node Copy()
+        {
+            return new Shorthand(First.Copy(), Second.Copy());
+        }
     }
 }

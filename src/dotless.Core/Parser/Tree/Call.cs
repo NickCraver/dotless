@@ -22,7 +22,7 @@ namespace dotless.Core.Parser.Tree
 
         public override Node Evaluate(Env env)
         {
-            var args = Arguments.Select(a => a.Evaluate(env));
+            var args = Arguments.SelectList(a => a.Evaluate(env));
 
             if (env != null)
             {
@@ -37,6 +37,17 @@ namespace dotless.Core.Parser.Tree
             }
 
             return new TextNode(Name + "(" + Arguments.Select(a => a.Evaluate(env).ToCSS(env)).JoinStrings(", ") + ")");
+        }
+
+        public override Node Copy()
+        {
+            return 
+                new Call(
+                    Name, 
+                    Arguments != null ?
+                        (NodeList<Expression>)Arguments.Copy() : 
+                        null
+                );
         }
     }
 }

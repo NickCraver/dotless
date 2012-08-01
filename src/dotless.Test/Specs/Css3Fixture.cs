@@ -11,7 +11,7 @@ namespace dotless.Test.Specs
                 @"
 .comma-delimited {
   background: url(bg.jpg) no-repeat, url(bg.png) repeat-x top left, url(bg);
-  text-shadow: -1px -1px 1px red, 6px 5px 5px yellow;
+  text-shadow: -1px -1px 1px #ff0000, 6px 5px 5px #ffff00;
   -moz-box-shadow: 0pt 0pt 2px rgba(255, 255, 255, 0.4) inset, 0pt 4px 6px rgba(255, 255, 255, 0.4) inset;
 }
 ";
@@ -63,9 +63,9 @@ namespace dotless.Test.Specs
 
             var expected = @"
 @media screen {
-  color: red;
+  color: #ff0000;
   #header {
-    background-color: red;
+    background-color: #ff0000;
   }
 }
 ";
@@ -89,9 +89,9 @@ namespace dotless.Test.Specs
 
             var expected = @"
 @media screen {
-  color: red;
+  color: #ff0000;
   #header {
-    background-color: red;
+    background-color: #ff0000;
   }
 }
 ";

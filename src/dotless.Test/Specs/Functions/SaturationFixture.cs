@@ -23,8 +23,8 @@ namespace dotless.Test.Specs.Functions
             //Saturate
             AssertExpression("#d9f2d9", "saturation(hsl(120, 30, 90), 20%)");
             AssertExpression("#9e3f3f", "saturation(#855, 20%)");
-            AssertExpression("black", "saturation(#000, 20%)");
-            AssertExpression("white", "saturation(#fff, 20%)");
+            AssertExpression("#000000", "saturation(#000, 20%)");
+            AssertExpression("#ffffff", "saturation(#fff, 20%)");
             AssertExpression("#33ff33", "saturation(#8a8, 100%)");
             AssertExpression("#88aa88", "saturation(#8a8, 0%)");
             AssertExpression("rgba(158, 63, 63, 0.5)", "saturation(rgba(136, 85, 85, 0.5), 20%)");
@@ -32,8 +32,8 @@ namespace dotless.Test.Specs.Functions
             // Desaturate
             AssertExpression("#e3e8e3", "saturation(hsl(120, 30, 90), -20%)");
             AssertExpression("#726b6b", "saturation(#855, -20%)");
-            AssertExpression("black", "saturation(#000, -20%)");
-            AssertExpression("white", "saturation(#fff, -20%)");
+            AssertExpression("#000000", "saturation(#000, -20%)");
+            AssertExpression("#ffffff", "saturation(#fff, -20%)");
             AssertExpression("#999999", "saturation(#8a8, -100%)");
             AssertExpression("#88aa88", "saturation(#8a8, 0%)");
             AssertExpression("rgba(114, 107, 107, 0.5)", "saturation(rgba(136, 85, 85, .5), -20%)");

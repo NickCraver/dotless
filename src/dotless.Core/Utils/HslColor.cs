@@ -81,7 +81,7 @@ namespace dotless.Core.Utils
                 else
                     saturation = range/(2 - max - min);
 
-                var deltas = rgb.Select(x => (((max - x)/6) + (range/2))/range).ToArray();
+                var deltas = rgb.SelectArray(x => (((max - x)/6) + (range/2))/range);
 
                 if (rgb[R] == max)
                     hue = deltas[B] - deltas[G];

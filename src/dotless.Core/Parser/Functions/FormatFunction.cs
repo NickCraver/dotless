@@ -17,7 +17,11 @@ namespace dotless.Core.Parser.Functions
 
             var format = unescape(Arguments[0]);
 
-            var args = Arguments.Skip(1).Select(unescape).ToArray();
+            var args = new string[Arguments.Count - 1];
+            for (var i = 1; i < Arguments.Count; i++)
+            {
+                args[i - 1] = unescape(Arguments[i]);
+            }
 
             var result = string.Format(format, args);
 

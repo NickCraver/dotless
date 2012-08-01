@@ -84,5 +84,10 @@
         {
             return Unit == "%" ? Value*max/100d : Value;
         }
+
+        public override Node Copy()
+        {
+            return new Number(Value, Unit);
+        }
     }
 }

@@ -14,6 +14,8 @@ namespace dotless.Core.Parser.Tree
         protected bool Css { get; set; }
         public Ruleset InnerRoot { get; set; }
 
+        private Import() { }
+
         public Import(Quoted path, Importer importer)
             : this(path.Value, importer)
         {
@@ -50,8 +52,22 @@ namespace dotless.Core.Parser.Tree
                 return new NodeList(new TextNode("@import " + OriginalPath.ToCSS(env) + ";\n"));
 
             NodeHelper.ExpandNodes<Import>(env, InnerRoot.Rules);
+            InnerRoot.InvalidRulesetCache();
 
             return new NodeList(InnerRoot.Rules);
+        }
+
+        public override Node Copy()
+        {
+            return
+                new Import
+                {
+                     Importer = Importer,
+                     Path = Path,
+                     OriginalPath = OriginalPath != null ? OriginalPath.Copy() : null,
+                     Css = Css,
+                     InnerRoot = InnerRoot != null ? (Ruleset)InnerRoot.Copy() : null
+                };
         }
     }
 }

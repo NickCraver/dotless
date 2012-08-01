@@ -22,7 +22,7 @@
         {
             Optimisation = 1;
             DefaultStylizer = () => new PlainStylizer();
-            DefaultParser = () => new Parser(Optimisation, DefaultStylizer(), new Importer());
+            DefaultParser = () => new Parser(Optimisation, DefaultStylizer(), new Importer(""));
             DefaultEnv = () => new Env();
         }
 

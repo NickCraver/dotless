@@ -49,7 +49,7 @@ namespace dotless.Test.Unit.Engine
         {
             CacheDecorator.TransformToCss(Less, FileName);
 
-            Cache.Verify(c=> c.Insert(CacheKey, It.IsAny<IEnumerable<string>>(), Css));
+            Cache.Verify(c=> c.Insert(CacheKey, It.IsAny<IEnumerable<string>>().ToList(), Css));
         }
 
         [Test]
@@ -57,7 +57,7 @@ namespace dotless.Test.Unit.Engine
         {
             CacheDecorator.TransformToCss(Less, FileName);
 
-            Cache.Verify(c => c.Insert(CacheKey, It.Is<IEnumerable<string>>(i => i.Contains(FileName)), Css));
+            Cache.Verify(c => c.Insert(CacheKey, It.Is<IEnumerable<string>>(i => i.Contains(FileName)).ToList(), Css));
         }
 
         [Test]
@@ -65,7 +65,7 @@ namespace dotless.Test.Unit.Engine
         {
             CacheDecorator.TransformToCss(Less, FileName);
 
-            Cache.Verify(c => c.Insert(CacheKey, It.Is<IEnumerable<string>>(i => i.Count() == 1), Css));
+            Cache.Verify(c => c.Insert(CacheKey, It.Is<IEnumerable<string>>(i => i.Count() == 1).ToList(), Css));
         }
 
         [Test]
@@ -76,7 +76,7 @@ namespace dotless.Test.Unit.Engine
 
             CacheDecorator.TransformToCss(Less, FileName);
 
-            Cache.Verify(c => c.Insert(CacheKey, It.Is<IEnumerable<string>>(i => Imports.All(s => i.Contains(s))), Css));
+            Cache.Verify(c => c.Insert(CacheKey, It.Is<IEnumerable<string>>(i => Imports.All(s => i.Contains(s))).ToList(), Css));
         }
 
         [Test]

@@ -16,7 +16,7 @@ namespace dotless.Core.Importers
         public Func<Parser> Parser { get; set; }
         public readonly List<string> Paths = new List<string>();
 
-        public Importer() : this(new FileReader())
+        public Importer(string curDir) : this(new FileReader(curDir))
         {
         }
 

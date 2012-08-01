@@ -17,9 +17,9 @@ namespace dotless.Core.Cache
             PathResolver = pathResolver;
         }
 
-        public void Insert(string cacheKey, IEnumerable<string> fileDependancies, string css)
+        public void Insert(string cacheKey, IList<string> fileDependancies, string css)
         {
-            var fullPaths = fileDependancies.Select(f => PathResolver.GetFullPath(f)).ToArray();
+            var fullPaths = fileDependancies.SelectArray(f => PathResolver.GetFullPath(f));
 
             var cache = GetCache();
 

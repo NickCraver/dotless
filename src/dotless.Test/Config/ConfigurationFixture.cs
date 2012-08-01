@@ -15,13 +15,13 @@ namespace dotless.Test.Config
     {
         private ILessEngine GetEngine(DotlessConfiguration config)
         {
-            return ((ParameterDecorator)new EngineFactory(config).GetEngine()).Underlying;
+            return ((ParameterDecorator)new EngineFactory(config).GetEngine(".")).Underlying;
         }
 
         [Test]
         public void DefaultEngineIsParameterDecorator()
         {
-            var engine = new EngineFactory().GetEngine();
+            var engine = new EngineFactory().GetEngine(".");
 
             Assert.That(engine, Is.TypeOf<ParameterDecorator>());
         }
@@ -29,7 +29,7 @@ namespace dotless.Test.Config
         [Test]
         public void CachingIsEnabledByDefault()
         {
-            var engine = new EngineFactory().GetEngine();
+            var engine = new EngineFactory().GetEngine(".");
             engine = ((ParameterDecorator)engine).Underlying;
 
             Assert.That(engine, Is.TypeOf<CacheDecorator>());

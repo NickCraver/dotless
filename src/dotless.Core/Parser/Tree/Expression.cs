@@ -24,7 +24,18 @@
 
         public override string ToCSS(Env env)
         {
-            return Value.Select(e => e.ToCSS(env)).JoinStrings(" ");
+            var prevWasVerbatim = true;
+            return Value.Select(e => {
+                var thisIsVerbatim = e is Quoted && ((Quoted)e).Verbatim;
+                string space = prevWasVerbatim || thisIsVerbatim ? "" : " ";
+                prevWasVerbatim = thisIsVerbatim;
+                return space + e.ToCSS(env);
+            }).JoinStrings("");
+        }
+
+        public override Node Copy()
+        {
+            return new Expression((NodeList)Value.Copy());
         }
     }
 }

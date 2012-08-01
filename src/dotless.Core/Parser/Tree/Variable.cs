@@ -23,5 +23,10 @@ namespace dotless.Core.Parser.Tree
 
             throw new ParsingException("variable " + Name + " is undefined", Index);
         }
+
+        public override Node Copy()
+        {
+            return new Variable(Name);
+        }
     }
 }

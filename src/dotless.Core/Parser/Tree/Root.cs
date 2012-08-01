@@ -1,6 +1,7 @@
 namespace dotless.Core.Parser.Tree
 {
     using System;
+    using System.Linq;
     using System.Collections.Generic;
     using Exceptions;
     using Infrastructure;
@@ -27,5 +28,9 @@ namespace dotless.Core.Parser.Tree
             }
         }
 
+        public override Node Copy()
+        {
+            return new Root(Rules.SelectList(r => r.Copy()), Error);
+        }
     }
 }

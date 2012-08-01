@@ -11,7 +11,7 @@ namespace dotless.Test.Specs
             var variables = new Dictionary<string, string>();
             variables["var"] = "1px";
 
-            AssertExpression("2px solid black", "(@var * 2) solid black", variables);
+            AssertExpression("2px solid #000000", "(@var * 2) solid black", variables);
             AssertExpression("1px 3px 16 3", "(@var * 1) (@var + 2) (4 * 4) 3", variables);
             AssertExpression("36", "(6 * 6)");
             AssertExpression("2px 36px", "2px (6px * 6px)");

@@ -30,8 +30,9 @@ namespace dotless.Core.Parser.Tree
             env.Rule = this;
 
             var rules = new NodeList();
-            foreach (var closure in closures)
+            for(var i = 0; i < closures.Count; i++)
             {
+                var closure = closures[i];
                 var ruleset = closure.Ruleset;
 
                 if (!ruleset.MatchArguements(Arguments, env))
@@ -74,6 +75,15 @@ namespace dotless.Core.Parser.Tree
             }
 
             return rules;
+        }
+
+        public override Node Copy()
+        {
+            return 
+                new MixinCall(
+                    (NodeList<Element>)Selector.Elements.Copy(), 
+                    (NodeList<Expression>)Arguments.Copy()
+                );
         }
     }
 }

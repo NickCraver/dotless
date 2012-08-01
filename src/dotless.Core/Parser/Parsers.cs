@@ -110,14 +110,14 @@ namespace dotless.Core.Parser
         //
         public Quoted Quoted(Parser parser)
         {
-            if (parser.Tokenizer.CurrentChar != '"' && parser.Tokenizer.CurrentChar != '\'')
+            if (parser.Tokenizer.CurrentChar != '"' && parser.Tokenizer.CurrentChar != '\'' && parser.Tokenizer.CurrentChar != '`')
                 return null;
 
             var index = parser.Tokenizer.Location.Index;
 
-            var str = parser.Tokenizer.Match(@"""((?:[^""\\\r\n]|\\.)*)""|'((?:[^'\\\r\n]|\\.)*)'");
+            var str = parser.Tokenizer.Match(@"""((?:[^""\\\r\n]|\\.)*)""|'((?:[^'\\\r\n]|\\.)*)'|`((?:[^`\\\r\n]|\\.)*)`");
             if (str)
-                return NodeProvider.Quoted(str[0], str[1] ?? str[2], index);
+                return NodeProvider.Quoted(str[0], str[1] ?? str[2] ?? str[3], index);
 
             return null;
         }
@@ -270,26 +270,6 @@ namespace dotless.Core.Parser
             var value = parser.Tokenizer.Match(@"(-?[0-9]*\.?[0-9]+)(px|%|em|pc|ex|in|deg|s|ms|pt|cm|mm)?");
             if (value)
                 return NodeProvider.Number(value[1], value[2], index);
-
-            return null;
-        }
-
-        //
-        // C# code to be evaluated
-        //
-        //     ``
-        //
-        public Script Script(Parser parser)
-        {
-            if (parser.Tokenizer.CurrentChar != '`') 
-                return null;
-
-            var index = parser.Tokenizer.Location.Index;
-
-            var script = parser.Tokenizer.Match(@"`([^`]*)`");
-
-            if (script != null)
-                return NodeProvider.Script(script[1], index);
 
             return null;
         }
@@ -455,7 +435,7 @@ namespace dotless.Core.Parser
         public Node Entity(Parser parser)
         {
             return Literal(parser) || Variable(parser) || Url(parser) ||
-                   Call(parser)    || Keyword(parser)  || Script(parser);
+                   Call(parser) || Keyword(parser);
         }
 
         //
@@ -479,7 +459,7 @@ namespace dotless.Core.Parser
 
             var index = parser.Tokenizer.Location.Index;
 
-            if (!parser.Tokenizer.Match(@"opacity=", true))
+            if (!parser.Tokenizer.MatchSimple(@"opacity=", caseInsensitive: true))
                 return null;
 
             if (value = parser.Tokenizer.Match(@"[0-9]+") || Variable(parser))
@@ -532,8 +512,14 @@ namespace dotless.Core.Parser
         {
             var index = parser.Tokenizer.Location.Index;
 
+            if (parser.Tokenizer.Match('&'))
+                return NodeProvider.Combinator("&", index);
+
+            if (parser.Tokenizer.MatchSimple("::"))
+                return NodeProvider.Combinator("::", index);
+
             Node match;
-            if (match = parser.Tokenizer.Match(@"[+>~]") || parser.Tokenizer.Match('&') || parser.Tokenizer.Match(@"::"))
+            if (match = parser.Tokenizer.Match(@"[+>~]"))
                 return NodeProvider.Combinator(match.ToString(), index);
 
             return NodeProvider.Combinator(parser.Tokenizer.PreviousChar == ' ' ? " " : null, index);
@@ -663,8 +649,8 @@ namespace dotless.Core.Parser
             {
                 Node value;
 
-                if ((name[0] != '@') && (parser.Tokenizer.Peek(@"([^@+\/*`(;{}'""-]*);")))
-                    value = parser.Tokenizer.Match(@"[^@+\/*`(;{}'""-]*");
+                if ((name[0] != '@') && (parser.Tokenizer.Peek(@"([^@+\/*(;{}'""-]*);")))
+                    value = parser.Tokenizer.Match(@"[^@+\/*(;{}'""-]*");
                 else if (name == "font")
                     value = Font(parser);
                 else
@@ -888,8 +874,11 @@ namespace dotless.Core.Parser
           if (operand != null)
             return operand;
 
-          if(parser.Tokenizer.CurrentChar == 'u' && parser.Tokenizer.Peek(@"url\("))
-            return null;
+          /*if(parser.Tokenizer.CurrentChar == 'u' && parser.Tokenizer.Peek(@"url\("))
+            return null;*/
+
+          if (parser.Tokenizer.CurrentChar == 'u' && parser.Tokenizer.PeekSimple("url("))
+              return null;
 
           return Call(parser) || Keyword(parser);
         }

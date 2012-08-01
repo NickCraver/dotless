@@ -74,5 +74,10 @@
                     throw new InvalidOperationException("Unknown operator");
             }
         }
+
+        public override Node Copy()
+        {
+            return new Operation(Operator, First.Copy(), Second.Copy());
+        }
     }
 }

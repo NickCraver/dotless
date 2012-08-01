@@ -72,11 +72,6 @@ namespace dotless.Core.Parser.Infrastructure
             return new Url(value, paths) { Index = index };
         }
 
-        public Script Script(string script, int index)
-        {
-            return new Script(script) { Index = index };
-        }
-
         public MixinCall MixinCall(NodeList<Element> elements, NodeList<Expression> arguments, int index)
         {
             return new MixinCall(elements, arguments) { Index = index };

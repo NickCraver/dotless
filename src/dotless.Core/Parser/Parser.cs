@@ -3,6 +3,8 @@
 namespace dotless.Core.Parser
 {
     using System.Collections.Generic;
+    using System.Collections.Concurrent;
+    using System.Linq;
     using Exceptions;
     using Importers;
     using Infrastructure;
@@ -46,6 +48,8 @@ namespace dotless.Core.Parser
     //
     public class Parser
     {
+        private static ConcurrentDictionary<int, Ruleset> Cached = new ConcurrentDictionary<int, Ruleset>();
+
         public Tokenizer Tokenizer { get; set; }
         public IStylizer Stylizer { get; set; }
 
@@ -62,30 +66,42 @@ namespace dotless.Core.Parser
 
         private const int defaultOptimization = 1;
 
-        public Parser()
-            : this(defaultOptimization)
+        private bool NoCache;
+
+        public Parser(string curDir, bool noCache = false)
+            : this(curDir, defaultOptimization, noCache)
         {
         }
 
-        public Parser(int optimization)
-            : this(optimization, new PlainStylizer(), new Importer())
+        public Parser(string curDir, int optimization, bool noCache = false)
+            : this(optimization, new PlainStylizer(), new Importer(curDir), noCache)
         {
         }
 
-        public Parser(IStylizer stylizer, Importer importer)
-            : this(defaultOptimization, stylizer, importer)
+        public Parser(IStylizer stylizer, Importer importer, bool noCache = false)
+            : this(defaultOptimization, stylizer, importer, noCache)
         {
         }
 
-        public Parser(int optimization, IStylizer stylizer, Importer importer)
+        public Parser(int optimization, IStylizer stylizer, Importer importer, bool noCache = false)
         {
             Stylizer = stylizer;
             Importer = importer;
             Tokenizer = new Tokenizer(optimization);
+            NoCache = noCache;
         }
 
         public Ruleset Parse(string input, string fileName)
         {
+            var cacheKey = input.GetHashCode() ^ fileName.GetHashCode();
+
+            Ruleset cached;
+            if (!NoCache && Cached.TryGetValue(cacheKey, out cached))
+            {
+                var ret = (Ruleset)cached.Copy();
+                return ret;
+            }
+
             Tokenizer.SetupInput(input);
             ParsingException parsingException = null;
             Ruleset root = null;
@@ -103,7 +119,13 @@ namespace dotless.Core.Parser
             }
 
             if (Tokenizer.HasCompletedParsing() && parsingException == null)
-                return root;
+            {
+                Cached.TryAdd(cacheKey, root);
+
+                var ret = (Ruleset)root.Copy();
+
+                return ret;
+            }
 
             throw GenerateParserError(parsingException, fileName);
         }

@@ -18,5 +18,10 @@
         {
             return env.Compress ? "" : Value;
         }
+
+        public override Node Copy()
+        {
+            return new Comment(Value, Silent);
+        }
     }
 }

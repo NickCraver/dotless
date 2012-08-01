@@ -18,17 +18,17 @@ namespace dotless.Test.Specs
         [Test]
         public void Overflow()
         {
-            AssertExpression("black", "#111111 - #444444");
-            AssertExpression("white", "#eee + #fff");
-            AssertExpression("white", "#aaa * 3");
-            AssertExpression("lime", "#00ee00 + #009900");
+            AssertExpression("#000000", "#111111 - #444444");
+            AssertExpression("#ffffff", "#eee + #fff");
+            AssertExpression("#ffffff", "#aaa * 3");
+            AssertExpression("#00ff00", "#00ee00 + #009900");
         }
 
         [Test]
         public void Gray()
         {
             AssertExpression("#c8c8c8", "rgb(200, 200, 200)");
-            AssertExpression("gray", "hsl(50, 0, 50)");
+            AssertExpression("#808080", "hsl(50, 0, 50)");
         }
     }
 }

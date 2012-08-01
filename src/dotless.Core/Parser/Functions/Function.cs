@@ -11,9 +11,9 @@ namespace dotless.Core.Parser.Functions
         protected List<Node> Arguments { get; set; }
         public int Index { get; set; }
 
-        public Node Call(Env env, IEnumerable<Node> arguments)
+        public Node Call(Env env, List<Node> arguments)
         {
-            Arguments = arguments.ToList();
+            Arguments = arguments;
 
             var node = Evaluate(env);
             node.Index = Index;

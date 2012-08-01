@@ -30,8 +30,10 @@
         public Rule FindVariable(string name, Node rule)
         {
             var previousNode = rule;
-            foreach (var frame in Frames)
+
+            for (var i = 0; i < Frames.Count; i++)
             {
+                var frame = Frames.ElementAt(i);
                 var v = frame.Variable(name, previousNode);
                 if (v)
                     return v;

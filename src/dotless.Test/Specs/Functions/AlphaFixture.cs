@@ -40,8 +40,8 @@ namespace dotless.Test.Specs.Functions
             AssertExpression("rgba(0, 0, 0, 0.75)", "alpha(rgba(0, 0, 0, 0.5), .25)");
             AssertExpression("rgba(0, 0, 0, 0.3)", "alpha(rgba(0, 0, 0, 0.2), .1)");
             AssertExpression("rgba(0, 0, 0, 0.7)", "alpha(rgba(0, 0, 0, 0.2), .5px)");
-            AssertExpression("black", "alpha(rgba(0, 0, 0, 0.2), 0.8)");
-            AssertExpression("black", "alpha(rgba(0, 0, 0, 0.2), 1)");
+            AssertExpression("#000000", "alpha(rgba(0, 0, 0, 0.2), 0.8)");
+            AssertExpression("#000000", "alpha(rgba(0, 0, 0, 0.2), 1)");
             AssertExpression("rgba(0, 0, 0, 0.2)", "alpha(rgba(0, 0, 0, 0.2), 0)");
 
             // Transparentize / Fade Out

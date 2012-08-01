@@ -57,7 +57,7 @@ namespace dotless.Test.Specs
             imports["/import/absolute.less"] = @"body { background-color: black; }";
             imports["../import/relative-with-parent-dir.less"] = @"body { background-color: foo; }";
 
-            return new Parser {Importer = new Importer(new DictionaryReader(imports))};
+            return new Parser("") {Importer = new Importer(new DictionaryReader(imports))};
         }
 
         [Test]
@@ -79,15 +79,15 @@ namespace dotless.Test.Specs
                 @"
 @import ""import-test-d.css"";
 #import {
-  color: red;
+  color: #ff0000;
 }
 .mixin {
   height: 10px;
-  color: red;
+  color: #ff0000;
 }
 #import-test {
   height: 10px;
-  color: red;
+  color: #ff0000;
   width: 10px;
   height: 30%;
 }
@@ -98,7 +98,10 @@ namespace dotless.Test.Specs
             AssertLess(input, expected, parser);
         }
 
-        [Test]
+        // This test is commented out because it tests a feature we disabled;
+        // see dotless.Core/Parser/Tree/Url.cs
+
+        /*[Test]
         public void RelativeUrls()
         {
             var input =
@@ -122,7 +125,7 @@ namespace dotless.Test.Specs
             var parser = GetParser();
 
             AssertLess(input, expected, parser);
-        }
+        }*/
 
         [Test]
         public void AbsoluteUrls()

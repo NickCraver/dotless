@@ -11,7 +11,7 @@ namespace dotless.Core.Cache
             _cache = new Dictionary<string, string>();
         }
 
-        public void Insert(string fileName, IEnumerable<string> imports, string css)
+        public void Insert(string fileName, IList<string> imports, string css)
         {
             _cache[fileName] = css;
         }

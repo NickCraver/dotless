@@ -3,10 +3,13 @@ namespace dotless.Compiler
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
     using System.Reflection;
     using Core;
     using Core.configuration;
     using Core.Parameters;
+    using System.Text;
+    using System.Diagnostics;
 
     public class Program
     {
@@ -18,7 +21,7 @@ namespace dotless.Compiler
 
             var configuration = GetConfigurationFromArguments(arguments);
 
-            if(configuration.Help)
+            if (configuration.Help)
                 return 0;
 
             if (arguments.Count == 0)
@@ -27,10 +30,18 @@ namespace dotless.Compiler
                 return 0;
             }
 
+            Stopwatch timer = null;
+
+            if (configuration.TimeCompilation)
+            {
+                timer = new Stopwatch();
+                timer.Start();
+            }
+
             var returnValue = 0;
 
             var inputDirectoryPath = Path.GetDirectoryName(arguments[0]);
-            if(string.IsNullOrEmpty(inputDirectoryPath)) inputDirectoryPath = ".\\";
+            if (string.IsNullOrEmpty(inputDirectoryPath)) inputDirectoryPath = ".\\";
             var inputFilePattern = Path.GetFileName(arguments[0]);
             var outputDirectoryPath = string.Empty;
             var outputFilename = string.Empty;
@@ -47,20 +58,39 @@ namespace dotless.Compiler
             else outputDirectoryPath = inputDirectoryPath;
             if (HasWildcards(inputFilePattern)) outputFilename = string.Empty;
 
-            var filenames = Directory.GetFiles(inputDirectoryPath, inputFilePattern, configuration.Recurse ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly); 
-            var engine = new EngineFactory(configuration).GetEngine();
+            var factory = new EngineFactory(configuration);
 
-            using (var watcher = new Watcher() { Watch = configuration.Watch })
-            {
-                if (watcher.Watch && HasWildcards(inputFilePattern))
-                {
-                    CompilationFactoryDelegate factoryDelegate = (input) => CreationImpl(engine, input, Path.GetFullPath(outputDirectoryPath));
-                    watcher.SetupDirectoryWatcher(Path.GetFullPath(inputDirectoryPath), inputFilePattern, factoryDelegate);
-                }
+            var filenames = Directory.GetFiles(inputDirectoryPath, inputFilePattern, configuration.Recurse ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
 
-                foreach (var filename in filenames)
+            var parallelFiles = filenames.AsParallel();
+            parallelFiles =
+                parallelFiles.WithDegreeOfParallelism(
+                    configuration.CompileInParallel ?
+                        Environment.ProcessorCount :
+                        1
+                ).WithExecutionMode(ParallelExecutionMode.ForceParallelism);
+
+            var logLock = new object();
+            Action<string> logDel =
+                delegate(string log)
                 {
+                    if (string.IsNullOrEmpty(log)) return;
+
+                    lock (logLock)
+                    {
+                        Console.Write(log);
+                    }
+                };
+
+            parallelFiles.ForAll(
+                delegate(string filename)
+                {
+                    var log = new StringBuilder();
+
                     var inputFile = new FileInfo(filename);
+
+                    var engine = factory.GetEngine(Path.GetDirectoryName(inputFile.FullName));
+
                     var pathbuilder = configuration.Recurse
                                           ? new System.Text.StringBuilder(Path.GetDirectoryName(filename) + "\\")
                                           : new System.Text.StringBuilder(outputDirectoryPath + "\\");
@@ -68,47 +98,58 @@ namespace dotless.Compiler
                     else pathbuilder.Append(outputFilename);
                     var outputFilePath = Path.GetFullPath(pathbuilder.ToString());
 
-                    CompilationDelegate compilationDelegate = () => CompileImpl(engine, inputFile.FullName, outputFilePath);
-                    Console.WriteLine("[Compile]");
+                    CompilationDelegate compilationDelegate = () => CompileImpl(engine, inputFile.FullName, outputFilePath, log, configuration.SilenceLogging);
+
+                    if (!configuration.SilenceLogging)
+                    {
+                        log.AppendLine("[Compile]");
+                    }
+
                     var files = compilationDelegate();
+
                     if (files == null)
+                    {
                         returnValue = 1;
-                    if (watcher.Watch) watcher.SetupWatchers(files, compilationDelegate);
+                    }
+
+                    logDel(log.Length == 0 ? null : log.ToString());
                 }
-                if (configuration.Watch) WriteAbortInstructions();
-                while (watcher.Watch && Console.ReadKey(true).Key != ConsoleKey.Enter) 
-                {
-                    System.Threading.Thread.Sleep(200);
-                }
+            );
+
+            if (configuration.TimeCompilation)
+            {
+                timer.Stop();
+                Console.WriteLine("Compilation took: {0}ms", timer.ElapsedMilliseconds);
             }
+
             return returnValue;
         }
-        private static CompilationDelegate CreationImpl(ILessEngine engine, string inputFilePath, string outputDirectoryPath)
-        {
-            var pathbuilder = new System.Text.StringBuilder(outputDirectoryPath + Path.DirectorySeparatorChar);
-            pathbuilder.Append(Path.ChangeExtension(Path.GetFileName(inputFilePath), "css"));
-            var outputFilePath = Path.GetFullPath(pathbuilder.ToString());
-            return () => CompileImpl(engine, inputFilePath, outputFilePath);
-        }
 
-        private static IEnumerable<string> CompileImpl(ILessEngine engine, string inputFilePath, string outputFilePath)
+        private static IEnumerable<string> CompileImpl(ILessEngine engine, string inputFilePath, string outputFilePath, StringBuilder sb, bool silent)
         {
-            engine = new FixImportPathDecorator(engine);
-            var currentDir = Directory.GetCurrentDirectory();
             try
             {
-                Console.WriteLine("{0} -> {1}", inputFilePath, outputFilePath);
+                if (!silent)
+                {
+                    sb.AppendFormat("{0} -> {1}\n", inputFilePath, outputFilePath);
+                }
+
                 var directoryPath = Path.GetDirectoryName(inputFilePath);
-                var source = new dotless.Core.Input.FileReader().GetFileContents(inputFilePath);
-                Directory.SetCurrentDirectory(directoryPath);
+                var source = new dotless.Core.Input.FileReader(directoryPath).GetFileContents(inputFilePath);
                 var css = engine.TransformToCss(source, inputFilePath);
                 File.WriteAllText(outputFilePath, css);
-                Console.WriteLine("[Done]");
+
+                if (!silent)
+                {
+                    sb.AppendLine("[Done]");
+                }
 
                 var files = new List<string>();
                 files.Add(inputFilePath);
                 foreach (var file in engine.GetImports())
+                {
                     files.Add(Path.Combine(directoryPath, Path.ChangeExtension(file, "less")));
+                }
                 engine.ResetImports();
                 return files;
             }
@@ -118,14 +159,16 @@ namespace dotless.Compiler
             }
             catch (Exception ex)
             {
-                Console.WriteLine("[FAILED]");
-                Console.WriteLine("Compilation failed: {0}", ex.Message);
-                Console.WriteLine(ex.StackTrace);
+                if (silent)
+                {
+                    // Need to know the file now
+                    sb.AppendFormat("{0} -> {1}\n", inputFilePath, outputFilePath);
+                }
+
+                sb.AppendLine("[FAILED]");
+                sb.AppendFormat("Compilation failed: {0}\n", ex.Message);
+                sb.AppendLine(ex.StackTrace);
                 return null;
-            }
-            finally
-            {
-                Directory.SetCurrentDirectory(currentDir);
             }
         }
 
@@ -158,9 +201,11 @@ namespace dotless.Compiler
             Console.WriteLine("Usage: dotless.Compiler.exe [-switches] <inputfile> [outputfile]");
             Console.WriteLine("\tSwitches:");
             Console.WriteLine("\t\t-m --minify - Output CSS will be compressed");
-            Console.WriteLine("\t\t-w --watch - Watches .less file for changes");
             Console.WriteLine("\t\t-h --help - Displays this dialog");
             Console.WriteLine("\t\t-r --recurse - Apply input file pattern to sub directories");
+            Console.WriteLine("\t\t-p --parallel - Compile using one thread per core");
+            Console.WriteLine("\t\t-t --time - Time how long compilation takes");
+            Console.WriteLine("\t\t-s --silent - Only log errors");
             Console.WriteLine("\tinputfile: .less file dotless should compile to CSS");
             Console.WriteLine("\toutputfile: (optional) desired filename for .css output");
             Console.WriteLine("\t\t Defaults to inputfile.css");
@@ -184,13 +229,21 @@ namespace dotless.Compiler
                         configuration.Help = true;
                         return configuration;
                     }
-                    else if (arg == "-w" || arg == "--watch")
-                    {
-                        configuration.Watch = true;
-                    }
                     else if (arg == "-r" || arg == "--rescurse")
                     {
                         configuration.Recurse = true;
+                    }
+                    else if (arg == "-p" || arg == "--parallel")
+                    {
+                        configuration.CompileInParallel = true;
+                    }
+                    else if (arg == "-t" || arg == "--time")
+                    {
+                        configuration.TimeCompilation = true;
+                    }
+                    else if (arg == "-s" || arg == "--silent")
+                    {
+                        configuration.SilenceLogging = true;
                     }
                     else if (arg.StartsWith("-D") && arg.Contains("="))
                     {

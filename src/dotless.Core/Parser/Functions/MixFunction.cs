@@ -5,6 +5,7 @@ namespace dotless.Core.Parser.Functions
     using Infrastructure.Nodes;
     using Tree;
     using Utils;
+    using System.Collections.Generic;
 
     public class MixFunction : Function
     {
@@ -12,7 +13,14 @@ namespace dotless.Core.Parser.Functions
         {
             Guard.ExpectMinArguments(2, Arguments.Count, this, Index);
             Guard.ExpectMaxArguments(3, Arguments.Count, this, Index);
-            Guard.ExpectAllNodes<Color>(Arguments.Take(2), this, Index);
+
+            var argGuard = new List<Node>(2);
+            for (var i = 0; i < 2 && i < Arguments.Count; i++)
+            {
+                argGuard.Add(Arguments[i]);
+            }
+
+            Guard.ExpectAllNodes<Color>(argGuard, this, Index);
 
             double weight = 50;
             if (Arguments.Count == 3)
@@ -34,7 +42,7 @@ namespace dotless.Core.Parser.Functions
             var w1 = (((w*a == -1) ? w : (w + a)/(1 + w*a)) + 1)/2.0;
             var w2 = 1 - w1;
 
-            var rgb = colors[0].RGB.Select((x, i) => x*w1 + colors[1].RGB[i]*w2).ToArray();
+            var rgb = colors[0].RGB.SelectArray((x, i) => x*w1 + colors[1].RGB[i]*w2);
 
             var alpha = colors[0].Alpha*p + colors[1].Alpha*(1 - p);
 

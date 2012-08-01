@@ -14,10 +14,9 @@ namespace dotless.Core
         {
         }
 
-        public ILessEngine GetEngine()
+        public ILessEngine GetEngine(string curDir, bool noCache = false)
         {
-            var container = new ContainerFactory().GetContainer(Configuration);
-            return container.GetInstance<ILessEngine>();
+            return new LessEngine(curDir, Configuration.MinifyOutput, noCache: noCache);
         }
     }
 }

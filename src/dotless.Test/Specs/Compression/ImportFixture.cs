@@ -36,7 +36,7 @@ namespace dotless.Test.Specs.Compression
 }
 ";
 
-            return new Parser {Importer = new Importer(new DictionaryReader(imports))};
+            return new Parser("") {Importer = new Importer(new DictionaryReader(imports))};
         }
 
         [Test]
@@ -54,7 +54,7 @@ namespace dotless.Test.Specs.Compression
 }
 ";
 
-            var expected = "@import \"import-test-d.css\";#import{color:red;}.mixin{height:10px;color:red;}#import-test{height:10px;color:red;width:10px;height:30%;}";
+            var expected = "@import \"import-test-d.css\";#import{color:#ff0000;}.mixin{height:10px;color:#ff0000;}#import-test{height:10px;color:#ff0000;width:10px;height:30%;}";
 
             var parser = GetParser();
 

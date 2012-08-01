@@ -7,11 +7,22 @@
     public class Quoted : TextNode
     {
         public char? Quote { get; set; }
+        public bool Verbatim { get; set; }
+
+        private Quoted() { }
 
         public Quoted(string value, string contents)
           : base(contents)
         {
-            Quote = value[0];
+            if (value[0] == '`')
+            {
+                Quote = null;
+                Verbatim = true;
+            }
+            else
+            {
+                Quote = value[0];
+            }
         }
 
         public Quoted(string value)
@@ -30,6 +41,17 @@
         public string UnescapeContents()
         {
             return _unescape.Replace(Value, @"$1$2");
+        }
+
+        public override Node Copy()
+        {
+            return new Quoted
+            {
+                Value = Value,
+                Quote = Quote,
+                Index = Index,
+                Verbatim = Verbatim
+            };
         }
     }
 }

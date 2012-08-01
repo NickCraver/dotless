@@ -49,7 +49,10 @@ namespace dotless.Core.Parser.Tree
                         val = Params[i].Value;
 
                     if (val)
+                    {
                         frame.Rules.Add(new Rule(Params[i].Name, val.Evaluate(env)) { Index = val.Index });
+                        frame.InvalidRulesetCache();
+                    }
                     else
                         throw new ParsingException(String.Format("wrong number of arguments for {0} ({1} for {2})", Name, args.Count, _arity), Index);
                 }
@@ -60,8 +63,10 @@ namespace dotless.Core.Parser.Tree
 
             var newRules = new List<Node>();
 
-            foreach (var rule in Rules)
+            for(var i = 0; i < Rules.Count; i++)
             {
+                var rule = Rules[i];
+
                 if (rule is MixinDefinition)
                 {
                     var mixin = rule as MixinDefinition;
@@ -73,10 +78,8 @@ namespace dotless.Core.Parser.Tree
                     var ruleset = (rule as Ruleset);
 
                     context.Frames.Push(ruleset);
-
-                    var rules = NodeHelper.NonDestructiveExpandNodes<MixinCall>(context, ruleset.Rules)
-                        .Select(r => r.Evaluate(context)).ToList();
-
+                    NodeHelper.ExpandNodes<MixinCall>(context, ruleset.Rules);
+                    var rules = ruleset.Rules.SelectList(r => r.Evaluate(context));
                     context.Frames.Pop();
 
                     newRules.Add(new Ruleset(ruleset.Selectors, rules));
@@ -118,6 +121,11 @@ namespace dotless.Core.Parser.Tree
         protected override string ToCSS(Env env, Context list)
         {
             return "";
+        }
+
+        public override Node Copy()
+        {
+            return new MixinDefinition(Name, (NodeList<Rule>)Params.Copy(), Rules.SelectList(r => r.Copy()));
         }
     }
 }

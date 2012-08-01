@@ -6,11 +6,30 @@ namespace dotless.Core.Parser.Tree
     using Infrastructure;
     using Infrastructure.Nodes;
     using Utils;
+    using System.Text;
 
     public class Ruleset : Node
     {
         public NodeList<Selector> Selectors { get; set; }
         public List<Node> Rules { get; set; }
+
+        private List<Ruleset> _RulesetsCache;
+        public List<Ruleset> Rulesets
+        {
+            get
+            {
+                if (_RulesetsCache != null) return _RulesetsCache;
+
+                _RulesetsCache = GetRulesets();
+
+                return _RulesetsCache;
+            }
+        }
+
+        public void InvalidRulesetCache()
+        {
+            _RulesetsCache = null;
+        }
 
         private Dictionary<string, List<Closure>> _lookups;
         private Dictionary<string, Rule> _variables;
@@ -38,9 +57,22 @@ namespace dotless.Core.Parser.Tree
                 .FirstOrDefault(r => r.Name == name);
         }
 
-        public List<Ruleset> Rulesets()
+        private List<Ruleset> GetRulesets()
         {
             return Rules.OfType<Ruleset>().ToList();
+        }
+
+        private static bool _AnyMatch(NodeList<Selector> selectors, Selector other)
+        {
+            for (var i = 0; i < selectors.Count; i++)
+            {
+                if (selectors[i].Match(other))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         public List<Closure> Find(Env env, Selector selector, Ruleset self)
@@ -52,24 +84,30 @@ namespace dotless.Core.Parser.Tree
             if (_lookups.ContainsKey(key))
                 return _lookups[key];
 
-            foreach (var rule in Rulesets().Where(rule => rule != self))
+            for(var x = 0; x < Rulesets.Count; x++)
             {
-                if (rule.Selectors && rule.Selectors.Any(selector.Match))
+                var rule = Rulesets[x];
+                if (rule == self) continue;
+
+                if(rule.Selectors && _AnyMatch(rule.Selectors, selector))
                 {
                     if (selector.Elements.Count > 1)
                     {
                         var remainingSelectors = new Selector(new NodeList<Element>(selector.Elements.Skip(1)));
                         var closures = rule.Find(env, remainingSelectors, self);
 
-                        foreach (var closure in closures)
+                        for (var i = 0; i < closures.Count; i++)
                         {
+                            var closure = closures[i];
                             closure.Context.Insert(0, rule);
                         }
 
                         rules.AddRange(closures);
                     }
                     else
+                    {
                         rules.Add(new Closure { Ruleset = rule, Context = new List<Ruleset> { rule } });
+                    }
                 }
             }
             return _lookups[key] = rules;
@@ -105,6 +143,8 @@ namespace dotless.Core.Parser.Tree
                 Rules[i] = Rules[i].Evaluate(env);
             }
 
+            InvalidRulesetCache();
+
             env.Frames.Pop();
 
             return Rules;
@@ -125,7 +165,30 @@ namespace dotless.Core.Parser.Tree
             var css = ToCSS(env, new Context());
 
             if (env.Compress)
-                return Regex.Replace(css, @"(\s)+", " ");
+            {
+                var minified = new StringBuilder(css.Length);
+
+                bool inWhitespace = false;
+
+                for (var i = 0; i < css.Length; i++)
+                {
+                    var c = css[i];
+                    if (!char.IsWhiteSpace(c))
+                    {
+                        inWhitespace = false;
+                        minified.Append(c);
+                        continue;
+                    }
+
+                    if (!inWhitespace)
+                    {
+                        minified.Append(' ');
+                        inWhitespace = true;
+                    }
+                }
+
+                css = minified.ToString();
+            }
 
             return css;
         }
@@ -142,8 +205,10 @@ namespace dotless.Core.Parser.Tree
                 paths.AppendSelectors(context, Selectors);
             }
 
-            foreach (var rule in Rules)
+            for(var i = 0; i < Rules.Count; i++)
             {
+                var rule = Rules[i];
+
                 if (rule.IgnoreOutput())
                     continue;
 
@@ -201,6 +266,18 @@ namespace dotless.Core.Parser.Tree
             return Selectors != null && Selectors.Count > 0
                        ? string.Format(format, Selectors.Select(s => s.ToCSS(new Env())).JoinStrings(""), Rules.Count)
                        : string.Format(format, "*", Rules.Count);
+        }
+
+        public override Node Copy()
+        {
+            return new Ruleset(
+                Selectors != null ?
+                    (NodeList<Selector>)Selectors.Copy() :
+                    null, 
+                Rules != null ?
+                    Rules.SelectList(r => r.Copy()) :
+                    null
+            );
         }
     }
 }

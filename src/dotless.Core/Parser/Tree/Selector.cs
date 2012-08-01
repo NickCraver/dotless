@@ -37,5 +37,10 @@
         {
             return ToCSS(new Env());
         }
+
+        public override Node Copy()
+        {
+            return new Selector((NodeList<Element>)Elements.Copy());
+        }
     }
 }

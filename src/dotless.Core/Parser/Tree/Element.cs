@@ -18,5 +18,10 @@
         {
             return Combinator.ToCSS(env) + Value;
         }
+
+        public override Node Copy()
+        {
+            return new Element((Combinator)Combinator.Copy(), Value);
+        }
     }
 }

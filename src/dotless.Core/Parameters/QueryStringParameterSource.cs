@@ -17,8 +17,9 @@
             var dictionary = new Dictionary<string, string>();
             var queryString = http.Context.Request.QueryString;
             var allKeys = queryString.AllKeys;
-            foreach (var key in allKeys)
+            for(var i = 0; i < allKeys.Length; i++)
             {
+                var key = allKeys[i];
                 if (key != null)
                 {
                     string s = queryString[key];

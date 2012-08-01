@@ -32,7 +32,7 @@
             env.Frames.Push(this);
 
             if (Rules != null)
-                Rules = new List<Node>(Rules.Select(r => r.Evaluate(env)));
+                Rules = Rules.SelectList(r => r.Evaluate(env));
             else
                 Value = Value.Evaluate(env);
 
@@ -50,6 +50,17 @@
                     (env.Compress ? "}" : "\n}\n");
 
             return Name + " " + Value.ToCSS(env) + ";\n";
+        }
+
+        public override Node Copy()
+        {
+            return
+                new Directive
+                {
+                    Name = Name,
+                    Value = Value != null ? Value.Copy() : null,
+                    Rules = Rules != null ? Rules.SelectList(r => r.Copy()) : null
+                };
         }
     }
 }

@@ -1,5 +1,3 @@
-using dotless.Core.Exceptions;
-
 namespace dotless.Core.Parser.Tree
 {
     using Infrastructure;
@@ -21,11 +19,6 @@ namespace dotless.Core.Parser.Tree
         public override Node Evaluate(Env env)
         {
             env.Rule = this;
-
-            if (Value == null)
-            {
-                throw new ParsingException("No value found for rule " + Name, Index);
-            }
             
             var rule = new Rule(Name, Value.Evaluate(env)) {Index = Index};
 
@@ -40,6 +33,11 @@ namespace dotless.Core.Parser.Tree
                 return "";
 
             return Name + (env.Compress ? ":" : ": ") + Value.ToCSS(env) + ";";
+        }
+
+        public override Node Copy()
+        {
+            return new Rule(Name, Value.Copy());
         }
     }
 }

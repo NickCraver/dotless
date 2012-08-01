@@ -13,7 +13,7 @@ namespace dotless.Core.Parser.Functions
             Guard.ExpectNumArguments(4, Arguments.Count, this, Index);
             Guard.ExpectAllNodes<Number>(Arguments, this, Index);
 
-            var args = Arguments.Cast<Number>().ToArray();
+            var args = Arguments.CastArray<Node, Number>();
 
             return new HslColor(args[0], args[1], args[2], args[3]).ToRgbColor();
         }

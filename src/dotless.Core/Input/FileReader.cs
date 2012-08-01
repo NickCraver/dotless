@@ -1,13 +1,18 @@
 namespace dotless.Core.Input
 {
     using System.IO;
+    using System.Collections.Concurrent;
 
     public class FileReader : IFileReader
     {
-        public IPathResolver PathResolver { get; set; }
+        private static ConcurrentDictionary<string, string> Cache = new ConcurrentDictionary<string, string>();
 
-        public FileReader() : this(new RelativePathResolver())
+        public IPathResolver PathResolver { get; set; }
+        private bool NoCache;
+
+        public FileReader(string curDir, bool noCache = false) : this(new RelativePathResolver(curDir))
         {
+            NoCache = noCache;
         }
 
         public FileReader(IPathResolver pathResolver)
@@ -19,7 +24,14 @@ namespace dotless.Core.Input
         {
             fileName = PathResolver.GetFullPath(fileName);
 
-            return File.ReadAllText(fileName);
+            string cached;
+            if (!NoCache && Cache.TryGetValue(fileName, out cached)) return cached;
+
+            var ret = File.ReadAllText(fileName);
+
+            Cache[fileName] = ret;
+
+            return ret;
         }
     }
 }

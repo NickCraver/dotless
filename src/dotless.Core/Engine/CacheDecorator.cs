@@ -33,7 +33,9 @@ namespace dotless.Core
                 Logger.Debug(String.Format("Inserting cache entry for {0}", cacheKey));
 
                 var css = Underlying.TransformToCss(source, fileName);
-                var dependancies = new[] { fileName }.Concat(GetImports());
+
+                var dependancies = new List<string> { fileName };
+                dependancies.AddRange(GetImports());
                 
                 Cache.Insert(cacheKey, dependancies, css);
                 

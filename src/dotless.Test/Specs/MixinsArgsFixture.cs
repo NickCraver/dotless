@@ -90,7 +90,7 @@ body {
   color: blue;
   width: 10px;
   height: 99%;
-  border: 2px dotted black;
+  border: 2px dotted #000000;
 }
 .one-arg {
   width: 15px;
@@ -116,7 +116,7 @@ body {
 }
 body {
   padding: 30px;
-  color: red;
+  color: #ff0000;
 }
 .scope-mix {
   width: 8;

@@ -325,7 +325,7 @@ namespace dotless.Test.Specs
 
             var expected = @"
 #last {
-  color: blue;
+  color: #0000ff;
 }
 ";
 

@@ -2,24 +2,12 @@
 
 function Get-Git-Commit
 {
-    $v = git describe
-    trap [Exception]
-	{ 
-        $currentDir = pwd
-        throw "Error: Could not execute git-describe in folder $currentDir. Please make sure that git is installed in your PATH"
-    }
-    return $v
+    return "";
 }
 
 function Get-Git-Version
 {
-    $v = git describe --abbrev=0
-    trap [Exception]
-	{ 
-        $currentDir = pwd
-        throw "Error: Could not execute git-describe in folder $currentDir. Please make sure that git is installed in your PATH"
-    }
-    return $v -replace "v", ""
+    return "";
 }
 
 function Generate-Assembly-Info

@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>dotless.Core</RootNamespace>
     <AssemblyName>dotless.Core</AssemblyName>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>..\dotless-open-source.snk</AssemblyOriginatorKeyFile>
@@ -33,6 +33,7 @@
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -85,6 +86,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ExtensionMethods.cs" />
+    <Compile Include="Less.cs" />
     <Compile Include="Loggers\AspNetTraceLogger.cs" />
     <Compile Include="Loggers\DiagnosticsLogger.cs" />
     <Compile Include="Loggers\NullLogger.cs" />
@@ -92,10 +95,7 @@
     <Compile Include="Parameters\ConsoleArgumentParameterSource.cs" />
     <Compile Include="Parameters\IParameterSource.cs" />
     <Compile Include="Parameters\QueryStringParameterSource.cs" />
-    <Compile Include="Parser\Functions\HexFunction.cs" />
-    <Compile Include="Parser\Functions\ContrastFunction.cs" />
     <Compile Include="Parser\Infrastructure\Closure.cs" />
-    <Compile Include="Parser\Tree\Script.cs" />
     <Compile Include="Parser\Tree\Root.cs" />
     <Compile Include="Response\CachedCssResponse.cs">
       <SubType>Code</SubType>
@@ -127,7 +127,6 @@
     <Compile Include="Input\AspServerPathResolver.cs" />
     <Compile Include="Input\IPathResolver.cs" />
     <Compile Include="Input\RelativePathResolver.cs" />
-    <Compile Include="Less.cs" />
     <Compile Include="Loggers\AspResponseLogger.cs" />
     <Compile Include="Loggers\Logger.cs" />
     <Compile Include="Parser\Functions\AbsFunction.cs" />
@@ -193,7 +192,6 @@
     <Compile Include="Parser\Tree\Url.cs" />
     <Compile Include="Parser\Tree\Value.cs" />
     <Compile Include="Parser\Tree\Variable.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Input\FileReader.cs" />
     <Compile Include="HandlerImpl.cs" />
     <Compile Include="Engine\ILessEngine.cs" />
@@ -233,6 +231,9 @@
       <ProductName>Windows Installer 3.1</ProductName>
       <Install>true</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Properties\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

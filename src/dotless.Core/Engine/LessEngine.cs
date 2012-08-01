@@ -25,9 +25,15 @@ namespace dotless.Core
         {
         }
 
-        public LessEngine()
-            : this(new Parser.Parser())
+        public LessEngine(string curDir)
+            : this(new Parser.Parser(curDir))
         {
+        }
+
+        public LessEngine(string curDir, bool compress, bool noCache = false)
+            : this(new Parser.Parser(curDir, noCache: noCache), new ConsoleLogger(LogLevel.Error), compress)
+        {
+
         }
 
         public string TransformToCss(string source, string fileName)

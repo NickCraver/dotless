@@ -15,17 +15,20 @@
             Paths = new List<List<Selector>>();
         }
 
-        public void AppendSelectors(Context context, IEnumerable<Selector> selectors)
+        public void AppendSelectors(Context context, IList<Selector> selectors)
         {
             if (context == null || context.Paths.Count == 0)
             {
-                Paths.AddRange(selectors.Select(s => new List<Selector> {s}));
+                Paths.AddRange(selectors.Select(s => new List<Selector> { s }));
                 return;
             }
 
-            foreach (var selector in selectors)
+            for (var i = 0; i < selectors.Count; i++)
             {
-                Paths.AddRange(context.Paths.Select(path => path.Concat(new[] {selector}).ToList()));
+                var selector = selectors[i];
+
+                var subPaths = context.Paths.SelectList(path => { var ret = new List<Selector>(path); ret.Add(selector); return ret; });
+                Paths.AddRange(subPaths);
             }
         }
 

@@ -36,5 +36,10 @@
 
             return new Value(Values.Select(n => n.Evaluate(env)), Important);
         }
+
+        public override Node Copy()
+        {
+            return new Value((NodeList)Values.Copy(), Important);
+        }
     }
 }

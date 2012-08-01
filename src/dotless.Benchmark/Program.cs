@@ -11,7 +11,6 @@ namespace dotlessjs.Compiler
     {
         public static void Main(string[] args)
         {
-            Directory.SetCurrentDirectory("Input");
             var files = Directory.GetFiles(".", "*.less");
 
             var contents = files
@@ -38,7 +37,7 @@ namespace dotlessjs.Compiler
 
             var engines = new ILessEngine[]
                               {
-                                  new LessEngine()
+                                  new LessEngine("Input")
                               };
 
 
